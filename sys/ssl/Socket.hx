@@ -308,13 +308,13 @@ class Socket {
 	private function buildSSLContext( server : Bool ) : CTX {
 		var ctx : CTX = SSL_CTX_new( server ? SSLv23_server_method() : SSLv23_client_method() );
 		if( validateCert ) {
-			var r : Int = SSL_CTX_load_verify_locations( ctx, verifyCertFile, verifyCertFolder );
+			var r : Int = SSL_CTX_load_verify_locations( ctx, untyped verifyCertFile.__s, untyped verifyCertFolder.__s );
 			if( r == 0 )
 				throw "Failed to load certificates";
 			SSL_CTX_set_verify( ctx );
 		}
 		if( useCertChainFile != null && useKeyFile != null ){
-			var r : Int = SSL_CTX_use_certificate_file( ctx, useCertChainFile, useKeyFile );
+			var r : Int = SSL_CTX_use_certificate_file( ctx, untyped useCertChainFile.__s, untyped useKeyFile.__s );
 			if( r == 0 )
 				throw "Failed to use certificate";
 		}
