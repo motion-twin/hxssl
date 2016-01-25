@@ -137,6 +137,7 @@ class Socket {
 	private var verifyCertFile : String;
 	private var verifyCertFolder : String;
 	private var verifyHostname : String;
+	private var cipherList : Null<String>;
 
 	private var useCertChainFile : String;
 	private var useKeyFile : String;
@@ -189,6 +190,10 @@ class Socket {
 
 	public function setHostname( hostname : String ){
 		verifyHostname = hostname;
+	}
+
+	public function setCipherList( str : String ){
+		cipherList = str;
 	}
 
 	public function useCertificate( certChainFile : String, keyFile : String ){
@@ -327,6 +332,8 @@ class Socket {
 				return null;
 			});
 		}
+		if( cipherList != null )
+			SSL_set_cipher_list( ctx, untyped cipherList.__s );
 		return ctx;
 	}
 
@@ -363,6 +370,7 @@ class Socket {
 	private static var SSL_CTX_close = load( 'SSL_CTX_close', 1 );
 	private static var SSL_CTX_load_verify_locations = load( 'SSL_CTX_load_verify_locations', 3 );
 	private static var SSL_CTX_set_verify = load( 'SSL_CTX_set_verify', 1 );
+	private static var SSL_set_cipher_list = load( 'SSL_CTX_set_cipher_list', 2, true );
 	private static var SSL_CTX_use_certificate_file = load( 'SSL_CTX_use_certificate_file', 3 );
 	private static var SSL_CTX_set_session_id_context = load( 'SSL_CTX_set_session_id_context', 2 );
 	
@@ -375,11 +383,14 @@ class Socket {
 	private static var SSL_accept = load( 'SSL_accept', 2 );
 	
 	@:allow(sys.ssl)
-	private static function load( f : String, args : Int = 0 ) : Dynamic {
+	private static function load( f : String, args : Int = 0, ?lazy: Bool ) : Dynamic {
 		#if neko
 		if( !moduleInit ) loadNekoAPI();
 		#end
-		return Lib.load( 'hxssl', 'hxssl_'+f, args );
+		if( lazy )
+			return Lib.loadLazy( 'hxssl', 'hxssl_'+f, args );
+		else
+			return Lib.load( 'hxssl', 'hxssl_'+f, args );
 	}
 
 	#if neko

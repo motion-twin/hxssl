@@ -143,15 +143,9 @@ static value hxssl_SSL_set_bio( value ssl, value rbio, value wbio ) {
 static value hxssl_SSLv23_client_method() {
 	return alloc_abstract( k_ssl_method_pointer, (SSL_METHOD*)SSLv23_client_method() );
 }
-static value hxssl_TLSv1_client_method() {
-	return alloc_abstract( k_ssl_method_pointer, (SSL_METHOD*)TLSv1_client_method() );
-}
 
 static value hxssl_SSLv23_server_method() {
     return alloc_abstract( k_ssl_method_pointer, (SSL_METHOD*)SSLv23_server_method() );
-}
-static value hxssl_TLSv1_server_method() {
-	return alloc_abstract( k_ssl_method_pointer, (SSL_METHOD*)TLSv1_server_method() );
 }
 
 static value hxssl_SSL_CTX_new( value m ) {
@@ -161,6 +155,10 @@ static value hxssl_SSL_CTX_new( value m ) {
 static value hxssl_SSL_CTX_close( value ctx ) {
 	SSL_CTX_free( val_ctx(ctx) );
 	return alloc_null();
+}
+
+static value hxssl_SSL_CTX_set_cipher_list( value ctx, value str ){
+	return alloc_int(SSL_CTX_set_cipher_list( val_ctx(ctx), val_string(str) ));
 }
 
 static value hxssl_SSL_CTX_load_verify_locations( value ctx, value certFile, value certFolder ) {
@@ -543,12 +541,11 @@ DEFINE_PRIM( hxssl_SSL_free, 1 );
 DEFINE_PRIM( hxssl_SSL_set_bio, 3 );
 
 DEFINE_PRIM( hxssl_SSLv23_client_method, 0 );
-DEFINE_PRIM( hxssl_TLSv1_client_method, 0 );
 DEFINE_PRIM( hxssl_SSLv23_server_method, 0 );
-DEFINE_PRIM( hxssl_TLSv1_server_method, 0 );
 
 DEFINE_PRIM( hxssl_SSL_CTX_new, 1 );
 DEFINE_PRIM( hxssl_SSL_CTX_close, 1 );
+DEFINE_PRIM( hxssl_SSL_CTX_set_cipher_list, 2 );
 DEFINE_PRIM( hxssl_SSL_CTX_load_verify_locations, 3 );
 DEFINE_PRIM( hxssl_SSL_CTX_set_verify, 1 );
 DEFINE_PRIM( hxssl_SSL_CTX_use_certificate_file, 3 );
