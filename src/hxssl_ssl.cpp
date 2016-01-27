@@ -157,8 +157,18 @@ static value hxssl_SSL_CTX_close( value ctx ) {
 	return alloc_null();
 }
 
-static value hxssl_SSL_CTX_set_cipher_list( value ctx, value str ){
-	return alloc_int(SSL_CTX_set_cipher_list( val_ctx(ctx), val_string(str) ));
+static value hxssl_SSL_CTX_set_cipher_list( value ctx, value str, value preferServer ){
+	SSL_CTX * _ctx = val_ctx(ctx);
+
+	if( !val_is_null(str) ){
+		if( !SSL_CTX_set_cipher_list( _ctx, val_string(str) ) )
+			neko_error();
+	}
+
+	if( val_bool(preferServer) )
+		SSL_CTX_set_options( _ctx, SSL_OP_CIPHER_SERVER_PREFERENCE );
+	
+	return alloc_null();
 }
 
 static value hxssl_SSL_CTX_load_verify_locations( value ctx, value certFile, value certFolder ) {
@@ -545,7 +555,7 @@ DEFINE_PRIM( hxssl_SSLv23_server_method, 0 );
 
 DEFINE_PRIM( hxssl_SSL_CTX_new, 1 );
 DEFINE_PRIM( hxssl_SSL_CTX_close, 1 );
-DEFINE_PRIM( hxssl_SSL_CTX_set_cipher_list, 2 );
+DEFINE_PRIM( hxssl_SSL_CTX_set_cipher_list, 3 );
 DEFINE_PRIM( hxssl_SSL_CTX_load_verify_locations, 3 );
 DEFINE_PRIM( hxssl_SSL_CTX_set_verify, 1 );
 DEFINE_PRIM( hxssl_SSL_CTX_use_certificate_file, 3 );

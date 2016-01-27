@@ -138,6 +138,7 @@ class Socket {
 	private var verifyCertFolder : String;
 	private var verifyHostname : String;
 	private var cipherList : Null<String>;
+	private var cipherPreferServer : Bool;
 
 	private var useCertChainFile : String;
 	private var useKeyFile : String;
@@ -192,8 +193,9 @@ class Socket {
 		verifyHostname = hostname;
 	}
 
-	public function setCipherList( str : String ){
+	public function setCipherList( str : String, preferServer: Bool ){
 		cipherList = str;
+		cipherPreferServer = preferServer;
 	}
 
 	public function useCertificate( certChainFile : String, keyFile : String ){
@@ -332,8 +334,8 @@ class Socket {
 				return null;
 			});
 		}
-		if( cipherList != null )
-			SSL_set_cipher_list( ctx, untyped cipherList.__s );
+		if( cipherList != null || cipherPreferServer )
+			SSL_set_cipher_list( ctx, cipherList==null ? null : untyped cipherList.__s, cipherPreferServer==true );
 		return ctx;
 	}
 
@@ -370,7 +372,7 @@ class Socket {
 	private static var SSL_CTX_close = load( 'SSL_CTX_close', 1 );
 	private static var SSL_CTX_load_verify_locations = load( 'SSL_CTX_load_verify_locations', 3 );
 	private static var SSL_CTX_set_verify = load( 'SSL_CTX_set_verify', 1 );
-	private static var SSL_set_cipher_list = load( 'SSL_CTX_set_cipher_list', 2, true );
+	private static var SSL_set_cipher_list = load( 'SSL_CTX_set_cipher_list', 3, true );
 	private static var SSL_CTX_use_certificate_file = load( 'SSL_CTX_use_certificate_file', 3 );
 	private static var SSL_CTX_set_session_id_context = load( 'SSL_CTX_set_session_id_context', 2 );
 	
