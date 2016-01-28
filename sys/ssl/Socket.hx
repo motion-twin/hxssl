@@ -139,6 +139,7 @@ class Socket {
 	private var verifyHostname : String;
 	private var cipherList : Null<String>;
 	private var cipherPreferServer : Bool;
+	private var dhFile : Null<String>;
 
 	private var useCertChainFile : String;
 	private var useKeyFile : String;
@@ -196,6 +197,10 @@ class Socket {
 	public function setCipherList( str : String, preferServer: Bool ){
 		cipherList = str;
 		cipherPreferServer = preferServer;
+	}
+
+	public function setDHFile( file : String ){
+		dhFile = file;
 	}
 
 	public function useCertificate( certChainFile : String, keyFile : String ){
@@ -319,6 +324,9 @@ class Socket {
 
 	private function buildSSLContext( server : Bool ) : CTX {
 		var ctx : CTX = SSL_CTX_new( server ? SSLv23_server_method() : SSLv23_client_method() );
+		if( server )
+			try SSL_CTX_set_ecdh(ctx) catch( e : Dynamic ) {};
+
 		if( validateCert ) {
 			var r : Int = SSL_CTX_load_verify_locations( ctx, verifyCertFile==null ? null : untyped verifyCertFile.__s, verifyCertFolder==null ? null : untyped verifyCertFolder.__s );
 			if( r == 0 )
@@ -340,7 +348,11 @@ class Socket {
 			});
 		}
 		if( cipherList != null || cipherPreferServer )
-			SSL_set_cipher_list( ctx, cipherList==null ? null : untyped cipherList.__s, cipherPreferServer==true );
+			SSL_CTX_set_cipher_list( ctx, cipherList==null ? null : untyped cipherList.__s, cipherPreferServer==true );
+
+		if( dhFile != null )
+			SSL_CTX_set_dhfile( ctx, untyped dhFile.__s );
+
 		return ctx;
 	}
 
@@ -377,7 +389,9 @@ class Socket {
 	private static var SSL_CTX_close = load( 'SSL_CTX_close', 1 );
 	private static var SSL_CTX_load_verify_locations = load( 'SSL_CTX_load_verify_locations', 3 );
 	private static var SSL_CTX_set_verify = load( 'SSL_CTX_set_verify', 1 );
-	private static var SSL_set_cipher_list = load( 'SSL_CTX_set_cipher_list', 3, true );
+	private static var SSL_CTX_set_cipher_list = load( 'SSL_CTX_set_cipher_list', 3, true );
+	private static var SSL_CTX_set_dhfile = load( 'SSL_CTX_set_dhfile', 2, true );
+	private static var SSL_CTX_set_ecdh = load( 'SSL_CTX_set_ecdh', 1, true );
 	private static var SSL_CTX_use_certificate_file = load( 'SSL_CTX_use_certificate_file', 3 );
 	private static var SSL_CTX_set_session_id_context = load( 'SSL_CTX_set_session_id_context', 2 );
 	

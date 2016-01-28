@@ -157,6 +157,14 @@ static value hxssl_SSL_CTX_close( value ctx ) {
 	return alloc_null();
 }
 
+static value hxssl_SSL_CTX_set_ecdh( value ctx ){
+	SSL_CTX * _ctx = val_ctx(ctx);
+    EC_KEY *eckey = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+    SSL_CTX_set_tmp_ecdh(_ctx, eckey);
+	SSL_CTX_set_options(_ctx, SSL_OP_SINGLE_ECDH_USE);
+    EC_KEY_free(eckey);
+}
+
 static value hxssl_SSL_CTX_set_cipher_list( value ctx, value str, value preferServer ){
 	SSL_CTX * _ctx = val_ctx(ctx);
 
@@ -168,6 +176,32 @@ static value hxssl_SSL_CTX_set_cipher_list( value ctx, value str, value preferSe
 	if( val_bool(preferServer) )
 		SSL_CTX_set_options( _ctx, SSL_OP_CIPHER_SERVER_PREFERENCE );
 	
+	return alloc_null();
+}
+
+static value hxssl_SSL_CTX_set_dhfile( value ctx, value file ){
+    DH   *dh;
+    BIO  *bio;
+    bio = BIO_new_file(val_string(file), "r");
+	SSL_CTX * _ctx = val_ctx(ctx);
+
+    if (bio == NULL) 
+		neko_error();
+
+    dh = PEM_read_bio_DHparams(bio, NULL, NULL, NULL);
+    if (dh == NULL) {
+        BIO_free(bio);
+        neko_error();
+    }
+
+    if( SSL_CTX_set_tmp_dh(_ctx, dh) != 1 )
+		neko_error();
+
+	SSL_CTX_set_options(_ctx, SSL_OP_SINGLE_DH_USE);
+
+    DH_free(dh);
+    BIO_free(bio);
+
 	return alloc_null();
 }
 
@@ -558,6 +592,8 @@ DEFINE_PRIM( hxssl_SSLv23_server_method, 0 );
 DEFINE_PRIM( hxssl_SSL_CTX_new, 1 );
 DEFINE_PRIM( hxssl_SSL_CTX_close, 1 );
 DEFINE_PRIM( hxssl_SSL_CTX_set_cipher_list, 3 );
+DEFINE_PRIM( hxssl_SSL_CTX_set_dhfile, 2 );
+DEFINE_PRIM( hxssl_SSL_CTX_set_ecdh, 1 );
 DEFINE_PRIM( hxssl_SSL_CTX_load_verify_locations, 3 );
 DEFINE_PRIM( hxssl_SSL_CTX_set_verify, 1 );
 DEFINE_PRIM( hxssl_SSL_CTX_use_certificate_file, 3 );
