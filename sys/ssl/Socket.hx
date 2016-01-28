@@ -266,8 +266,13 @@ class Socket {
 		s.input.ssl = ssl;
 		s.output = new SocketOutput(c);
 		s.output.ssl = ssl;
-
-		SSL_accept( ssl, c );
+		
+		try {
+			SSL_accept( ssl, c );
+		}catch( e : Dynamic ){
+			s.close();
+			throw e;
+		}
 
 		return s;
 	}

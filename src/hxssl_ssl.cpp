@@ -528,13 +528,15 @@ static value hxssl___SSL_accept( value n ) {
 
 static value hxssl_SSL_accept( value ssl, value sock ) {
 	SSL* _ssl = val_ssl( ssl );
+	int r;
 	if( _ssl == NULL )
 		neko_error();
 	int _sock = ((int_val) val_data(sock) );
 	if( !SSL_set_fd( _ssl, _sock ) )
 	    neko_error();
-	if( SSL_accept( _ssl ) < 0 )
-	    neko_error();
+	r = SSL_accept( _ssl );
+	if( r < 0 )
+	    ssl_error(_ssl,r);
 	return alloc_null();
 }
 
